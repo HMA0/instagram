@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال رمز التحقق</title>
+    <style>
+        /* تحديد الخلفية والخصائص العامة */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            direction: rtl; /* الاتجاه من اليمين لليسار للغة العربية */
+            text-align: center;
+        }
+
+        /* تنسيق العنوان الرئيسي */
+        h2 {
+            color: #333;
+            margin-top: 50px;
+        }
+
+        /* تنسيق النموذج */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+
+        /* تنسيق الحقول في النموذج */
+        label {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: block;
+            text-align: right;
+            margin-right: 15px;
+        }
+
+        input[type="number"] {
+            width: 250px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* تنسيق زر عرض الأرقام المحفوظة */
+        #showNumbersButton {
+            position: fixed; /* تثبيت الزر في مكانه */
+            bottom: 10px; /* أسفل الصفحة */
+            left: 10px; /* يسار الصفحة */
+            padding: 1px 1px; /* حجم صغير جدًا */
+            font-size: 10px; /* حجم خط صغير جدًا */
+            background-color: #f4f4f9; /* لون أزرق */
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            line-height: 1; /* تقليل المسافة بين النص والحواف */
+            min-width: 50px; /* عرض صغير */
+        }
+
+        #showNumbersButton:hover {
+            background-color: #0056b3; /* لون أزرق داكن عند التمرير */
+        }
+
+        /* تنسيق الرسائل الخطأ */
+        .error {
+            font-size: 18px;
+            color: red;
+            margin-top: 20px;
+        }
+
+        /* تنسيق الرسالة العامة */
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        /* تنسيق قائمة الأرقام المحفوظة */
+        .saved-numbers {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .saved-numbers li {
+            background-color: #fff;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h2>أدخل رمز التحقق</h2>
+    <form id="verificationForm">
+        <input type="number" id="number" name="number" required>
+        <button type="submit">إرسال</button>
+    </form>
+
+    <!-- زر لعرض الأرقام المحفوظة -->
+    <button id="showNumbersButton">.</button>
+
+    <!-- مكان عرض الأرقام المحفوظة -->
+    <div id="savedNumbersMessage" class="message"></div>
+
+    <!-- سيتم عرض رسائل الخطأ هنا -->
+    <div id="responseMessage" class="error"></div>
+
+    <script>
+        // الحصول على النموذج وعناصر الرسائل
+        const form = document.getElementById('verificationForm');
+        const responseMessage = document.getElementById('responseMessage');
+        const showNumbersButton = document.getElementById('showNumbersButton');
+        const savedNumbersMessage = document.getElementById('savedNumbersMessage');
+
+        // إضافة حدث عند إرسال النموذج
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // منع إرسال النموذج بالطريقة التقليدية
+
+            // الحصول على القيمة المدخلة
+            const number = document.getElementById('number').value;
+
+            // التحقق من أن القيمة ليست فارغة
+            if (number) {
+                // استرجاع الأرقام المحفوظة من localStorage
+                let savedNumbers = JSON.parse(localStorage.getItem('savedNumbers')) || [];
+
+                // إضافة الرقم الجديد إلى المصفوفة
+                savedNumbers.push(number);
+
+                // حفظ المصفوفة المحدثة في localStorage
+                localStorage.setItem('savedNumbers', JSON.stringify(savedNumbers));
+
+                // مسح حقل الإدخال بعد الحفظ
+                document.getElementById('number').value = '';
+            } else {
+                // عرض رسالة خطأ إذا كان الحقل فارغًا
+                responseMessage.textContent = 'الرجاء إدخال رمز التحقق.';
+            }
+        });
+
+        // إضافة حدث عند النقر على زر عرض الأرقام المحفوظة
+        showNumbersButton.addEventListener('click', function() {
+            // استرجاع الأرقام المحفوظة من localStorage
+            const savedNumbers = JSON.parse(localStorage.getItem('savedNumbers')) || [];
+
+            // التحقق من وجود أرقام محفوظة
+            if (savedNumbers.length > 0) {
+                // عرض الأرقام المحفوظة في قائمة
+                savedNumbersMessage.innerHTML = `
+                    <h3>الأرقام المحفوظة:</h3>
+                    <ul class="saved-numbers">
+                        ${savedNumbers.map(num => `<li>${num}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                // عرض رسالة إذا لم يكن هناك أرقام محفوظة
+                savedNumbersMessage.textContent = 'لا توجد أرقام محفوظة.';
+            }
+        });
+    </script>
+</body>
+</html>
