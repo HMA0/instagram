@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال رمز التحقق</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            direction: rtl;
+        }
+        h2 {
+            color: #333;
+            margin-top: 50px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        input[type="number"] {
+            width: 250px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            font-size: 18px;
+            color: red;
+            margin-top: 20px;
+        }
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>أدخل رمز التحقق</h2>
+    <form id="verificationForm">
+        <input type="number" id="number" name="number" required>
+        <button type="submit">إرسال</button>
+    </form>
+
+    <div id="responseMessage" class="error"></div>
+
+    <script>
+        document.getElementById('verificationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const number = document.getElementById('number').value;
+            if (number) {
+                fetch('save.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'number=' + encodeURIComponent(number)
+                })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('responseMessage').textContent = data;
+                    document.getElementById('number').value = '';
+                    loadNumbers();
+                })
+                .catch(error => console.error('Error:', error));
+            } else {
+                document.getElementById('responseMessage').textContent = 'الرجاء إدخال رمز التحقق.';
+            }
+        });
+
+        function loadNumbers() {
+            fetch('view.php')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('savedNumbers');
+                    list.innerHTML = data.map(num => `<li>${num}</li>`).join('');
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        loadNumbers(); // تحميل الأرقام عند فتح الصفحة
+    </script>
+</body>
+</html>
